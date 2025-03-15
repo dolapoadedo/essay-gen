@@ -1,4 +1,3 @@
-/// <reference types="vite/client" />
 import OpenAI from 'openai';
 import { FormState } from '../context/FormContext';
 
@@ -110,7 +109,7 @@ ${Object.entries(followUpResponses)
   .map(([question, answer]) => `${question}: ${answer}`)
   .join('\n')}
 
-Write a 650-word essay that sounds authentic to a student. The essay should show reflection and personal growth while avoiding clichés and overly formal language. Format with proper paragraphs.`;
+Write a 650-word essay that sounds authentic to a student in the ${formData.academics.classRank} of their class. The essay should show reflection and personal growth while avoiding clichés and overly formal language. Format with proper paragraphs.`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini-2024-07-18",

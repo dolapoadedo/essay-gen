@@ -19,6 +19,8 @@ function TopicsPage() {
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<Record<string, TopicIdea[]>>({});
   const [progress, setProgress] = useState(0);
+  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
+  const [selectedIdea, setSelectedIdea] = useState<TopicIdea | null>(null);
 
   useEffect(() => {
     generateTopics();
@@ -56,14 +58,21 @@ function TopicsPage() {
   };
 
   const handleSelectTopic = (prompt: string, idea: TopicIdea) => {
-    dispatch({
-      type: 'SET_SELECTED_TOPIC',
-      payload: {
-        prompt,
-        idea: idea.title,
-      },
-    });
-    navigate('/followup');
+    setSelectedPrompt(prompt);
+    setSelectedIdea(idea);
+  };
+
+  const handleNext = () => {
+    if (selectedPrompt && selectedIdea) {
+      dispatch({
+        type: 'SET_SELECTED_TOPIC',
+        payload: {
+          prompt: selectedPrompt,
+          idea: selectedIdea.title,
+        },
+      });
+      navigate('/followup');
+    }
   };
 
   return (
@@ -112,7 +121,11 @@ function TopicsPage() {
               {suggestions[number]?.map((idea, index) => (
                 <div
                   key={index}
-                  className="p-4 border border-gray-200 rounded-md hover:border-blue-500 cursor-pointer transition-colors"
+                  className={`p-4 border rounded-md cursor-pointer transition-colors ${
+                    selectedIdea === idea && selectedPrompt === prompt
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-blue-500'
+                  }`}
                   onClick={() => handleSelectTopic(prompt, idea)}
                 >
                   <h3 className="font-medium text-blue-600 mb-2">{idea.title}</h3>
@@ -131,6 +144,16 @@ function TopicsPage() {
           className="btn btn-secondary"
         >
           Back to Questions
+        </button>
+        <button
+          type="button"
+          onClick={handleNext}
+          disabled={!selectedPrompt || !selectedIdea}
+          className={`btn btn-primary ${
+            !selectedPrompt || !selectedIdea ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          Next
         </button>
       </div>
     </div>

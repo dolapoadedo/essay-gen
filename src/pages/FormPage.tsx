@@ -22,16 +22,25 @@ function FormPage() {
   const CurrentStepComponent = currentStep.component;
 
   const validateCurrentStep = () => {
-    switch (currentStep.id) {
-      case 'basic-info':
-        return state.basicInfo.fullName && state.basicInfo.email;
-      case 'academics':
-        return state.academics.classRank && state.academics.subjects.length > 0;
-      case 'college-goals':
-        return state.collegeGoals.collegeTypes.length > 0;
-      default:
-        return true;
-    }
+    const result = (() => {
+      switch (currentStep.id) {
+        case 'basic-info':
+          return state.basicInfo.fullName && state.basicInfo.email;
+        case 'academics':
+          console.log('Validating academics:', {
+            classRank: state.academics.classRank,
+            subjectsLength: state.academics.subjects.length,
+            subjects: state.academics.subjects
+          });
+          return state.academics.classRank && state.academics.subjects.length > 0;
+        case 'college-goals':
+          return state.collegeGoals.collegeTypes.length > 0;
+        default:
+          return true;
+      }
+    })();
+    console.log('Validation result:', result);
+    return result;
   };
 
   const handleNext = () => {

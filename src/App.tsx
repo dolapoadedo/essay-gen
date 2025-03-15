@@ -1,10 +1,10 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import FormPage from './pages/FormPage.tsx';
-import TopicsPage from './pages/TopicsPage.tsx';
-import FollowupPage from './pages/FollowupPage.tsx';
-import ResultPage from './pages/ResultPage.tsx';
-import Header from './components/layout/Header.tsx';
+import FormPage from './pages/FormPage';
+import TopicsPage from './pages/TopicsPage';
+import FollowupPage from './pages/FollowupPage';
+import ResultPage from './pages/ResultPage';
+import Header from './components/layout/Header';
 
 function App() {
   return (

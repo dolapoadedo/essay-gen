@@ -36,6 +36,7 @@ const generateFollowUpQuestions = (prompt: string) => {
     ],
   };
 
+  // Determine which specific questions to add based on prompt keywords
   const promptLower = prompt.toLowerCase();
   let relevantQuestions = [...commonQuestions];
 
@@ -71,6 +72,7 @@ function FollowupPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate that all questions have been answered
     const unansweredQuestions = questions.filter(q => !responses[q] || responses[q].trim() === '');
     
     if (unansweredQuestions.length > 0) {
@@ -78,61 +80,66 @@ function FollowupPage() {
       return;
     }
 
+    // Save responses to context
     dispatch({
       type: 'UPDATE_FOLLOW_UP_RESPONSES',
       payload: responses
     });
 
+    // Navigate to result page
     navigate('/result');
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="card">
-        <h2 className="text-xl font-semibold mb-6">Follow-up Questions</h2>
-        <p className="text-gray-600 mb-6">
-          Help us understand more about your chosen topic by answering these questions.
-        </p>
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-600">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {questions.map((question, index) => (
-            <div key={index}>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {question}
-              </label>
-              <textarea
-                value={responses[question] || ''}
-                onChange={(e) => handleResponseChange(question, e.target.value)}
-                className="form-textarea mt-1 block w-full"
-                rows={3}
-                placeholder="Your answer..."
-              />
-            </div>
-          ))}
-
-          <div className="flex justify-between pt-4">
-            <button
-              type="button"
-              onClick={() => navigate('/topics')}
-              className="btn btn-secondary"
-            >
-              Back
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-            >
-              Continue
-            </button>
-          </div>
-        </form>
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Tell Us More About Your Topic</h1>
+        <div className="bg-blue-50 p-4 rounded-md">
+          <p className="font-medium text-blue-900 mb-2">Selected Prompt:</p>
+          <p className="text-blue-800">{state.selectedTopic.prompt}</p>
+          <p className="font-medium text-blue-900 mt-4 mb-2">Your Topic:</p>
+          <p className="text-blue-800">{state.selectedTopic.idea}</p>
+        </div>
       </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-600">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {questions.map((question, index) => (
+          <div key={index} className="card">
+            <label className="block mb-2 font-medium text-gray-900">
+              {question}
+            </label>
+            <textarea
+              value={responses[question] || ''}
+              onChange={(e) => handleResponseChange(question, e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows={4}
+              placeholder="Type your response here..."
+            />
+          </div>
+        ))}
+
+        <div className="flex justify-between mt-8">
+          <button
+            type="button"
+            onClick={() => navigate('/topics')}
+            className="btn btn-secondary"
+          >
+            Back to Topics
+          </button>
+          <button
+            type="submit"
+            className="btn btn-primary"
+          >
+            Generate Essay
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

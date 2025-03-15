@@ -41,7 +41,7 @@ function AcademicsForm() {
       <div className="space-y-4">
         <div>
           <label htmlFor="classRank" className="block text-sm font-medium text-gray-700">
-            Which best describes your class rank? *
+            Which best describes your class rank: *
           </label>
           <select
             id="classRank"
