@@ -12,6 +12,8 @@ const commonAppPrompts = {
   '6': 'Describe a topic, idea, or concept you find so engaging that it makes you lose all track of time. Why does it captivate you? What or who do you turn to when you want to learn more?'
 };
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 function TopicsPage() {
   const navigate = useNavigate();
   const { state, dispatch } = useForm();
@@ -22,21 +24,18 @@ function TopicsPage() {
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [selectedIdea, setSelectedIdea] = useState<TopicIdea | null>(null);
 
-  useEffect(() => {
-    generateTopics();
-  }, []);
-
-  const generateTopics = async () => {
+  const generateTopics = async (retryCount = 0) => {
     setIsLoading(true);
     setError(null);
     setProgress(0);
     
+    let progressInterval: NodeJS.Timeout | undefined;
+    
     try {
-      // Simulate progress during generation
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setProgress(prev => {
           if (prev >= 90) {
-            clearInterval(progressInterval);
+            if (progressInterval) clearInterval(progressInterval);
             return 90;
           }
           return prev + 10;
@@ -46,16 +45,31 @@ function TopicsPage() {
       const topics = await generateTopicSuggestions(state);
       setSuggestions(topics);
       setProgress(100);
-      
-      // Clear interval if it's still running
-      clearInterval(progressInterval);
-    } catch (err) {
-      setError('Failed to generate topic suggestions. Please try again.');
+      if (progressInterval) clearInterval(progressInterval);
+    } catch (err: any) {
+      if (progressInterval) clearInterval(progressInterval);
       console.error('Error generating topics:', err);
+      
+      // Handle rate limit errors
+      if (err?.status === 429 && retryCount < 3) {
+        setError('Rate limit reached. Retrying in 5 seconds...');
+        await delay(5000); // Wait 5 seconds before retrying
+        return generateTopics(retryCount + 1);
+      }
+
+      setError(
+        err?.status === 429
+          ? 'OpenAI rate limit reached. Please wait a minute and try again.'
+          : 'Failed to generate topic suggestions. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    generateTopics();
+  }, []);
 
   const handleSelectTopic = (prompt: string, idea: TopicIdea) => {
     setSelectedPrompt(prompt);
@@ -80,7 +94,7 @@ function TopicsPage() {
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Choose Your Essay Topic</h1>
         <button
-          onClick={generateTopics}
+          onClick={() => generateTopics()}
           disabled={isLoading}
           className="btn btn-secondary"
         >
