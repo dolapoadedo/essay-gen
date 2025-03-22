@@ -11,7 +11,12 @@ const collegeTypeOptions = [
   'State College'
 ];
 
-function CollegeGoalsForm() {
+interface CollegeGoalsFormProps {
+  onNext: () => void;
+  onBack: () => void;
+}
+
+function CollegeGoalsForm({ onNext, onBack }: CollegeGoalsFormProps) {
   const { state, dispatch } = useForm();
   const { collegeTypes, specificColleges } = state.collegeGoals;
   const [newCollege, setNewCollege] = React.useState('');

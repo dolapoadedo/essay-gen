@@ -12,7 +12,12 @@ const classRankOptions = [
   'Unranked'
 ];
 
-function AcademicsForm() {
+interface AcademicsFormProps {
+  onNext: () => void;
+  onBack: () => void;
+}
+
+function AcademicsForm({ onNext, onBack }: AcademicsFormProps) {
   const { state, dispatch } = useForm();
   const { classRank, gpa, subjects, majors } = state.academics;
 

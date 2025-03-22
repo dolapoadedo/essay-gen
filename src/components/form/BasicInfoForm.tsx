@@ -1,7 +1,12 @@
 import React from 'react';
 import { useForm } from '../../context/FormContext';
 
-function BasicInfoForm() {
+interface BasicInfoFormProps {
+  onNext: () => void;
+  onBack: () => void;
+}
+
+function BasicInfoForm({ onNext, onBack }: BasicInfoFormProps) {
   const { state, dispatch } = useForm();
   const { fullName, email } = state.basicInfo;
 

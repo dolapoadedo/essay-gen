@@ -30,6 +30,23 @@ export interface FormState {
     idea: string;
   } | null;
   followUpResponses: Record<string, string>;
+  activitiesAndInvolvement: {
+    activities: Array<{
+      category: string;
+      otherCategory?: string;
+      years: string[];
+      leadership: string;
+      description: string;
+      hoursPerWeek: string;
+    }>;
+  };
+  personalInsights: {
+    happy: string;
+    roleModel: string;
+    lesson: string;
+    hobby: string;
+    unique: string;
+  };
 }
 
 type FormAction =
@@ -40,6 +57,8 @@ type FormAction =
   | { type: 'UPDATE_PERSONAL'; payload: Partial<FormState['personal']> }
   | { type: 'SET_SELECTED_TOPIC'; payload: FormState['selectedTopic'] }
   | { type: 'UPDATE_FOLLOW_UP_RESPONSES'; payload: Record<string, string> }
+  | { type: 'UPDATE_ACTIVITIES_AND_INVOLVEMENT'; payload: Partial<FormState['activitiesAndInvolvement']> }
+  | { type: 'UPDATE_PERSONAL_INSIGHTS'; payload: Partial<FormState['personalInsights']> }
   | { type: 'RESET_FORM' };
 
 const initialState: FormState = {
@@ -68,6 +87,16 @@ const initialState: FormState = {
   },
   selectedTopic: null,
   followUpResponses: {},
+  activitiesAndInvolvement: {
+    activities: [],
+  },
+  personalInsights: {
+    happy: '',
+    roleModel: '',
+    lesson: '',
+    hobby: '',
+    unique: '',
+  },
 };
 
 const FormContext = createContext<{
@@ -114,6 +143,16 @@ const formReducer = (state: FormState, action: FormAction): FormState => {
           ...state.followUpResponses,
           ...action.payload,
         },
+      };
+    case 'UPDATE_ACTIVITIES_AND_INVOLVEMENT':
+      return {
+        ...state,
+        activitiesAndInvolvement: { ...state.activitiesAndInvolvement, ...action.payload },
+      };
+    case 'UPDATE_PERSONAL_INSIGHTS':
+      return {
+        ...state,
+        personalInsights: { ...state.personalInsights, ...action.payload },
       };
     case 'RESET_FORM':
       return initialState;

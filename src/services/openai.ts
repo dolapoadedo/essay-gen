@@ -24,8 +24,20 @@ Student Information:
 - Academic Interests: ${formData.academics.subjects.join(', ')}
 - Potential Majors: ${formData.academics.majors.join(', ')}
 - College Preferences: ${formData.collegeGoals.collegeTypes.join(', ')}
-- Activities: ${formData.activities.extracurriculars.join(', ')}
-- Volunteer Work: ${formData.activities.volunteerWork}
+- Activities & Involvement:
+${formData.activitiesAndInvolvement.activities.map(activity => 
+  `  - ${activity.category}${activity.otherCategory ? ` (${activity.otherCategory})` : ''}:
+    Years: ${activity.years.join(', ')}
+    Leadership: ${activity.leadership || 'None'}
+    Hours per Week: ${activity.hoursPerWeek}
+    Description: ${activity.description}`
+).join('\n')}
+- Personal Insights:
+  What makes you happy: ${formData.personalInsights.happy}
+  Role model: ${formData.personalInsights.roleModel}
+  Learning from mistakes: ${formData.personalInsights.lesson}
+  Hobbies: ${formData.personalInsights.hobby}
+  Unique perspective: ${formData.personalInsights.unique}
 - Challenges: ${formData.personal.challenge}
 - Values: ${formData.personal.values.join(', ')}
 - Unique Background: ${formData.personal.background}
@@ -95,8 +107,20 @@ Student Information:
 - Academic Interests: ${formData.academics.subjects.join(', ')}
 - Potential Majors: ${formData.academics.majors.join(', ')}
 - College Preferences: ${formData.collegeGoals.collegeTypes.join(', ')}
-- Activities: ${formData.activities.extracurriculars.join(', ')}
-- Volunteer Work: ${formData.activities.volunteerWork}
+- Activities & Involvement:
+${formData.activitiesAndInvolvement.activities.map(activity => 
+  `  - ${activity.category}${activity.otherCategory ? ` (${activity.otherCategory})` : ''}:
+    Years: ${activity.years.join(', ')}
+    Leadership: ${activity.leadership || 'None'}
+    Hours per Week: ${activity.hoursPerWeek}
+    Description: ${activity.description}`
+).join('\n')}
+- Personal Insights:
+  What makes you happy: ${formData.personalInsights.happy}
+  Role model: ${formData.personalInsights.roleModel}
+  Learning from mistakes: ${formData.personalInsights.lesson}
+  Hobbies: ${formData.personalInsights.hobby}
+  Unique perspective: ${formData.personalInsights.unique}
 - Challenges: ${formData.personal.challenge}
 - Values: ${formData.personal.values.join(', ')}
 - Unique Background: ${formData.personal.background}

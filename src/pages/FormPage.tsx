@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import BasicInfoForm from '../components/form/BasicInfoForm';
 import AcademicsForm from '../components/form/AcademicsForm';
 import CollegeGoalsForm from '../components/form/CollegeGoalsForm';
+import { ActivitiesForm } from '../components/form/ActivitiesForm';
+import { PersonalInsightsForm } from '../components/form/PersonalInsightsForm';
 import { useForm } from '../context/FormContext';
 
 const steps = [
   { id: 'basic-info', title: 'Basic Information', component: BasicInfoForm },
   { id: 'academics', title: 'Academic Information', component: AcademicsForm },
   { id: 'college-goals', title: 'College Goals', component: CollegeGoalsForm },
-  // Other form steps will be added here
+  { id: 'activities', title: 'Activities & Involvement', component: ActivitiesForm },
+  { id: 'personal-insights', title: 'Personal Insights', component: PersonalInsightsForm },
 ];
 
 function FormPage() {
@@ -36,14 +39,13 @@ function FormPage() {
         case 'basic-info':
           return state.basicInfo.fullName && state.basicInfo.email;
         case 'academics':
-          console.log('Validating academics:', {
-            classRank: state.academics.classRank,
-            subjectsLength: state.academics.subjects.length,
-            subjects: state.academics.subjects
-          });
           return state.academics.classRank && state.academics.subjects.length > 0;
         case 'college-goals':
           return state.collegeGoals.collegeTypes.length > 0;
+        case 'activities':
+        case 'personal-insights':
+          // These sections are optional, so always return true
+          return true;
         default:
           return true;
       }
@@ -72,7 +74,7 @@ function FormPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="card">
-        <CurrentStepComponent />
+        <CurrentStepComponent onNext={handleNext} onBack={handleBack} isStandalone={false} />
         
         <div className="mt-8 flex justify-between">
           <button

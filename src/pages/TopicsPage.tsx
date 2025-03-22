@@ -68,7 +68,16 @@ function TopicsPage() {
   };
 
   useEffect(() => {
-    generateTopics();
+    let isMounted = true;
+    const generateTopicsWithCleanup = async () => {
+      if (isMounted) {
+        await generateTopics();
+      }
+    };
+    generateTopicsWithCleanup();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleSelectTopic = (prompt: string, idea: TopicIdea) => {

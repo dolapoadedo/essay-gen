@@ -18,7 +18,16 @@ function ResultPage() {
   }
 
   useEffect(() => {
-    generateInitialEssay();
+    let isMounted = true;
+    const generateEssayWithCleanup = async () => {
+      if (isMounted) {
+        await generateInitialEssay();
+      }
+    };
+    generateEssayWithCleanup();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const generateInitialEssay = async () => {
