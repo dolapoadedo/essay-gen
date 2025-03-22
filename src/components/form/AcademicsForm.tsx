@@ -8,7 +8,8 @@ const classRankOptions = [
   'Top 25%',
   'Top 50%',
   'Top 75%',
-  'Bottom of the class'
+  'Bottom of the class',
+  'Unranked'
 ];
 
 function AcademicsForm() {

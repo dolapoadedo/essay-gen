@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BasicInfoForm from '../components/form/BasicInfoForm';
 import AcademicsForm from '../components/form/AcademicsForm';
@@ -14,9 +13,19 @@ const steps = [
 ];
 
 function FormPage() {
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [currentStepIndex, setCurrentStepIndex] = useState(() => {
+    // Try to get saved step from localStorage
+    const savedStep = localStorage.getItem('currentFormStep');
+    return savedStep ? parseInt(savedStep, 10) : 0;
+  });
+  
   const navigate = useNavigate();
   const { state } = useForm();
+
+  // Save current step to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('currentFormStep', currentStepIndex.toString());
+  }, [currentStepIndex]);
 
   const currentStep = steps[currentStepIndex];
   const CurrentStepComponent = currentStep.component;
