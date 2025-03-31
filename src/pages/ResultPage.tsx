@@ -5,8 +5,7 @@ import { generateEssay } from '../services/openai';
 
 function ResultPage() {
   const navigate = useNavigate();
-  const { state } = useForm();
-  const [essay, setEssay] = useState<string>('');
+  const { state, dispatch } = useForm();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [wordCount, setWordCount] = useState(0);
@@ -19,12 +18,15 @@ function ResultPage() {
 
   useEffect(() => {
     let isMounted = true;
-    const generateEssayWithCleanup = async () => {
-      if (isMounted) {
+    const generateEssayIfNeeded = async () => {
+      // Only generate if we don't have an essay yet
+      if (!state.generatedEssay && isMounted) {
         await generateInitialEssay();
+      } else if (state.generatedEssay) {
+        updateWordCount(state.generatedEssay);
       }
     };
-    generateEssayWithCleanup();
+    generateEssayIfNeeded();
     return () => {
       isMounted = false;
     };
@@ -42,7 +44,10 @@ function ResultPage() {
         state.selectedTopic.idea,
         state.followUpResponses
       );
-      setEssay(generatedEssay);
+      dispatch({
+        type: 'SET_GENERATED_ESSAY',
+        payload: generatedEssay
+      });
       updateWordCount(generatedEssay);
     } catch (err) {
       setError('Failed to generate essay. Please try again.');
@@ -57,11 +62,11 @@ function ResultPage() {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(essay);
+    navigator.clipboard.writeText(state.generatedEssay);
   };
 
   const handleDownload = () => {
-    const blob = new Blob([essay], { type: 'text/plain' });
+    const blob = new Blob([state.generatedEssay], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -92,14 +97,14 @@ function ResultPage() {
             </button>
             <button
               onClick={handleCopy}
-              disabled={isLoading || !essay}
+              disabled={isLoading || !state.generatedEssay}
               className="btn btn-secondary"
             >
               Copy
             </button>
             <button
               onClick={handleDownload}
-              disabled={isLoading || !essay}
+              disabled={isLoading || !state.generatedEssay}
               className="btn btn-secondary"
             >
               Download
@@ -120,31 +125,23 @@ function ResultPage() {
           </div>
         )}
 
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-            <span className="text-sm text-gray-600">
-              Word Count: {wordCount}/650
-            </span>
-            <span className={`text-sm ${wordCount > 650 ? 'text-red-600' : 'text-gray-600'}`}>
-              {wordCount > 650 ? 'Essay exceeds maximum word limit' : ''}
-            </span>
-          </div>
+        <div className="relative">
+          {isLoading && (
+            <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </div>
+          )}
           
-          <div className="p-6">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-3">Generating your essay...</span>
-              </div>
-            ) : (
-              <div className="prose max-w-none">
-                {essay.split('\n\n').map((paragraph, index) => (
-                  <p key={index} className="mb-4 text-gray-800 leading-relaxed">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
-            )}
+          <div className="mb-4 flex justify-between items-center">
+            <span className="text-sm text-gray-600">Word Count: {wordCount}/650</span>
+          </div>
+
+          <div className="prose max-w-none">
+            {state.generatedEssay.split('\n\n').map((paragraph, index) => (
+              <p key={index} className="mb-4">
+                {paragraph}
+              </p>
+            ))}
           </div>
         </div>
       </div>
@@ -155,7 +152,7 @@ function ResultPage() {
           onClick={() => navigate('/followup')}
           className="btn btn-secondary"
         >
-          Back to Questions
+          Back to Follow-up
         </button>
       </div>
     </div>

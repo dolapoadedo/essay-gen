@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from '../context/FormContext';
 import { generateTopicSuggestions, TopicIdea } from '../services/openai';
@@ -19,10 +19,21 @@ function TopicsPage() {
   const { state, dispatch } = useForm();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [suggestions, setSuggestions] = useState<Record<string, TopicIdea[]>>({});
   const [progress, setProgress] = useState(0);
-  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
-  const [selectedIdea, setSelectedIdea] = useState<TopicIdea | null>(null);
+  
+  // Initialize selected topic from saved state
+  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(() => 
+    state.selectedTopic ? state.selectedTopic.prompt : null
+  );
+  const [selectedIdea, setSelectedIdea] = useState<TopicIdea | null>(() => {
+    if (state.selectedTopic) {
+      return {
+        title: state.selectedTopic.idea,
+        description: state.selectedTopic.description
+      };
+    }
+    return null;
+  });
 
   const generateTopics = async (retryCount = 0) => {
     setIsLoading(true);
@@ -43,7 +54,10 @@ function TopicsPage() {
       }, 500);
 
       const topics = await generateTopicSuggestions(state);
-      setSuggestions(topics);
+      dispatch({
+        type: 'UPDATE_TOPIC_SUGGESTIONS',
+        payload: topics
+      });
       setProgress(100);
       if (progressInterval) clearInterval(progressInterval);
     } catch (err: any) {
@@ -67,19 +81,6 @@ function TopicsPage() {
     }
   };
 
-  useEffect(() => {
-    let isMounted = true;
-    const generateTopicsWithCleanup = async () => {
-      if (isMounted) {
-        await generateTopics();
-      }
-    };
-    generateTopicsWithCleanup();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   const handleSelectTopic = (prompt: string, idea: TopicIdea) => {
     setSelectedPrompt(prompt);
     setSelectedIdea(idea);
@@ -92,6 +93,7 @@ function TopicsPage() {
         payload: {
           prompt: selectedPrompt,
           idea: selectedIdea.title,
+          description: selectedIdea.description,
         },
       });
       navigate('/followup');
@@ -107,7 +109,7 @@ function TopicsPage() {
           disabled={isLoading}
           className="btn btn-secondary"
         >
-          {isLoading ? 'Generating...' : 'Regenerate Topics'}
+          {isLoading ? 'Generating...' : 'Generate Topics'}
         </button>
       </div>
 
@@ -141,11 +143,11 @@ function TopicsPage() {
             <p className="text-gray-600 mb-6">{prompt}</p>
             
             <div className="space-y-4">
-              {suggestions[number]?.map((idea, index) => (
+              {state.topicSuggestions[number]?.map((idea, index) => (
                 <div
                   key={index}
                   className={`p-4 border rounded-md cursor-pointer transition-colors ${
-                    selectedIdea === idea && selectedPrompt === prompt
+                    selectedIdea?.title === idea.title && selectedPrompt === prompt
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-blue-500'
                   }`}

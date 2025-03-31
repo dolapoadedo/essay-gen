@@ -28,6 +28,7 @@ export interface FormState {
   selectedTopic: {
     prompt: string;
     idea: string;
+    description: string;
   } | null;
   followUpResponses: Record<string, string>;
   activitiesAndInvolvement: {
@@ -47,6 +48,11 @@ export interface FormState {
     hobby: string;
     unique: string;
   };
+  topicSuggestions: Record<string, Array<{
+    title: string;
+    description: string;
+  }>>;
+  generatedEssay: string;
 }
 
 type FormAction =
@@ -59,6 +65,8 @@ type FormAction =
   | { type: 'UPDATE_FOLLOW_UP_RESPONSES'; payload: Record<string, string> }
   | { type: 'UPDATE_ACTIVITIES_AND_INVOLVEMENT'; payload: Partial<FormState['activitiesAndInvolvement']> }
   | { type: 'UPDATE_PERSONAL_INSIGHTS'; payload: Partial<FormState['personalInsights']> }
+  | { type: 'UPDATE_TOPIC_SUGGESTIONS'; payload: FormState['topicSuggestions'] }
+  | { type: 'SET_GENERATED_ESSAY'; payload: string }
   | { type: 'RESET_FORM' };
 
 const initialState: FormState = {
@@ -97,6 +105,8 @@ const initialState: FormState = {
     hobby: '',
     unique: '',
   },
+  topicSuggestions: {},
+  generatedEssay: '',
 };
 
 const FormContext = createContext<{
@@ -154,8 +164,21 @@ const formReducer = (state: FormState, action: FormAction): FormState => {
         ...state,
         personalInsights: { ...state.personalInsights, ...action.payload },
       };
+    case 'UPDATE_TOPIC_SUGGESTIONS':
+      return {
+        ...state,
+        topicSuggestions: action.payload,
+      };
+    case 'SET_GENERATED_ESSAY':
+      return {
+        ...state,
+        generatedEssay: action.payload,
+      };
     case 'RESET_FORM':
-      return initialState;
+      return {
+        ...initialState,
+        topicSuggestions: {}
+      };
     default:
       return state;
   }
@@ -183,10 +206,25 @@ export const FormProvider = ({ children }: { children: ReactNode }) => {
         if (!mounted) return;
 
         if (savedData) {
+          // Map of saved data keys to their corresponding action types
+          const actionTypeMap: Record<string, string> = {
+            basicInfo: 'UPDATE_BASIC_INFO',
+            academics: 'UPDATE_ACADEMICS',
+            collegeGoals: 'UPDATE_COLLEGE_GOALS',
+            activities: 'UPDATE_ACTIVITIES',
+            personal: 'UPDATE_PERSONAL',
+            selectedTopic: 'SET_SELECTED_TOPIC',
+            followUpResponses: 'UPDATE_FOLLOW_UP_RESPONSES',
+            activitiesAndInvolvement: 'UPDATE_ACTIVITIES_AND_INVOLVEMENT',
+            personalInsights: 'UPDATE_PERSONAL_INSIGHTS',
+            topicSuggestions: 'UPDATE_TOPIC_SUGGESTIONS',
+            generatedEssay: 'SET_GENERATED_ESSAY'
+          };
+
           Object.entries(savedData).forEach(([key, value]) => {
-            if (key in initialState) { // Only update if the key exists in our state
+            if (key in actionTypeMap) {
               dispatch({
-                type: `UPDATE_${key.toUpperCase()}` as any,
+                type: actionTypeMap[key] as any,
                 payload: value,
               });
             }

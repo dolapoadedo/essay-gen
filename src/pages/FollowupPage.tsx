@@ -52,7 +52,7 @@ const generateFollowUpQuestions = (prompt: string) => {
 function FollowupPage() {
   const navigate = useNavigate();
   const { state, dispatch } = useForm();
-  const [responses, setResponses] = useState<Record<string, string>>({});
+  const [responses, setResponses] = useState<Record<string, string>>(() => state.followUpResponses || {});
   const [error, setError] = useState<string | null>(null);
 
   if (!state.selectedTopic) {
@@ -63,10 +63,16 @@ function FollowupPage() {
   const questions = generateFollowUpQuestions(state.selectedTopic.prompt);
 
   const handleResponseChange = (question: string, value: string) => {
-    setResponses(prev => ({
-      ...prev,
+    const updatedResponses = {
+      ...responses,
       [question]: value
-    }));
+    };
+    setResponses(updatedResponses);
+    // Save to context immediately so it's not lost
+    dispatch({
+      type: 'UPDATE_FOLLOW_UP_RESPONSES',
+      payload: updatedResponses
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -80,12 +86,6 @@ function FollowupPage() {
       return;
     }
 
-    // Save responses to context
-    dispatch({
-      type: 'UPDATE_FOLLOW_UP_RESPONSES',
-      payload: responses
-    });
-
     // Navigate to result page
     navigate('/result');
   };
@@ -96,9 +96,10 @@ function FollowupPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Tell Us More About Your Topic</h1>
         <div className="bg-blue-50 p-4 rounded-md">
           <p className="font-medium text-blue-900 mb-2">Selected Prompt:</p>
-          <p className="text-blue-800">{state.selectedTopic.prompt}</p>
-          <p className="font-medium text-blue-900 mt-4 mb-2">Your Topic:</p>
-          <p className="text-blue-800">{state.selectedTopic.idea}</p>
+          <p className="text-blue-800 mb-4">{state.selectedTopic.prompt}</p>
+          <p className="font-medium text-blue-900 mb-2">Your Topic:</p>
+          <p className="text-blue-800 mb-2">{state.selectedTopic.idea}</p>
+          <p className="text-blue-800 text-sm">{state.selectedTopic.description}</p>
         </div>
       </div>
 
