@@ -31,6 +31,7 @@ export interface FormState {
     description: string;
   } | null;
   followUpResponses: Record<string, string>;
+  followUpQuestions: string[];
   activitiesAndInvolvement: {
     activities: Array<{
       category: string;
@@ -67,6 +68,7 @@ type FormAction =
   | { type: 'UPDATE_PERSONAL'; payload: Partial<FormState['personal']> }
   | { type: 'SET_SELECTED_TOPIC'; payload: FormState['selectedTopic'] }
   | { type: 'UPDATE_FOLLOW_UP_RESPONSES'; payload: Record<string, string> }
+  | { type: 'SET_FOLLOW_UP_QUESTIONS'; payload: string[] }
   | { type: 'UPDATE_ACTIVITIES_AND_INVOLVEMENT'; payload: Partial<FormState['activitiesAndInvolvement']> }
   | { type: 'UPDATE_PERSONAL_INSIGHTS'; payload: Partial<FormState['personalInsights']> }
   | { type: 'UPDATE_TOPIC_SUGGESTIONS'; payload: FormState['topicSuggestions'] }
@@ -99,6 +101,7 @@ const initialState: FormState = {
   },
   selectedTopic: null,
   followUpResponses: {},
+  followUpQuestions: [],
   activitiesAndInvolvement: {
     activities: [],
   },
@@ -161,6 +164,11 @@ const formReducer = (state: FormState, action: FormAction): FormState => {
           ...state.followUpResponses,
           ...action.payload,
         },
+      };
+    case 'SET_FOLLOW_UP_QUESTIONS':
+      return {
+        ...state,
+        followUpQuestions: action.payload,
       };
     case 'UPDATE_ACTIVITIES_AND_INVOLVEMENT':
       return {
@@ -264,6 +272,7 @@ export const FormProvider = ({ children }: { children: ReactNode }) => {
     const saveData = async () => {
       if (loading) return; // Don't save during initial load
 
+      console.log('Save effect triggered with state:', state);
       try {
         await saveFormData(state);
         setError(null);
@@ -274,9 +283,11 @@ export const FormProvider = ({ children }: { children: ReactNode }) => {
     };
 
     // Debounce saves to prevent too many writes
+    console.log('Scheduling save with timeout...');
     saveTimeout = setTimeout(saveData, 500);
 
     return () => {
+      console.log('Cleaning up save timeout');
       clearTimeout(saveTimeout);
     };
   }, [state, loading]);

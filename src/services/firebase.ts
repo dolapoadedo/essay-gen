@@ -30,6 +30,7 @@ export const initializeUser = async (): Promise<void> => {
 };
 
 export const saveFormData = async (formData: FormState): Promise<void> => {
+  console.log('Attempting to save form data:', formData);
   if (!auth.currentUser) {
     console.log('No user found, attempting to initialize...');
     await initializeUser();
@@ -42,6 +43,7 @@ export const saveFormData = async (formData: FormState): Promise<void> => {
 
   try {
     console.log('Saving form data for user:', auth.currentUser.uid);
+    console.log('Form data to save:', formData);
     const docRef = doc(db, 'forms', auth.currentUser.uid);
     await setDoc(docRef, formData);
     console.log('Form data saved successfully');

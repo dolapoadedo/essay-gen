@@ -7,32 +7,43 @@ function FollowupPage() {
   const navigate = useNavigate();
   const { state, dispatch } = useForm();
   const [responses, setResponses] = useState<Record<string, string>>(() => state.followUpResponses || {});
-  const [questions, setQuestions] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const generateQuestions = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const generatedQuestions = await generateFollowUpQuestions(
+        state,
+        state.selectedTopic!.prompt,
+        state.selectedTopic!.idea
+      );
+      dispatch({
+        type: 'SET_FOLLOW_UP_QUESTIONS',
+        payload: generatedQuestions
+      });
+    } catch (err) {
+      setError('Failed to generate questions. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadQuestions = async () => {
+    const initializeQuestions = async () => {
       if (!state.selectedTopic) {
         navigate('/topics');
         return;
       }
 
-      try {
-        const generatedQuestions = await generateFollowUpQuestions(
-          state,
-          state.selectedTopic.prompt,
-          state.selectedTopic.idea
-        );
-        setQuestions(generatedQuestions);
-      } catch (err) {
-        setError('Failed to load questions. Please try again.');
-      } finally {
-        setIsLoading(false);
+      // Only generate questions if we don't have any saved
+      if (state.followUpQuestions.length === 0) {
+        await generateQuestions();
       }
     };
 
-    loadQuestions();
+    initializeQuestions();
   }, [state.selectedTopic]);
 
   if (!state.selectedTopic) {
@@ -41,23 +52,26 @@ function FollowupPage() {
   }
 
   const handleResponseChange = (question: string, value: string) => {
+    console.log('Previous responses:', responses);
     const updatedResponses = {
       ...responses,
       [question]: value
     };
+    console.log('Updated responses:', updatedResponses);
     setResponses(updatedResponses);
     // Save to context immediately so it's not lost
     dispatch({
       type: 'UPDATE_FOLLOW_UP_RESPONSES',
       payload: updatedResponses
     });
+    console.log('Current form state after dispatch:', state);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Count how many questions have been answered
-    const answeredQuestions = questions.filter(q => responses[q] && responses[q].trim() !== '').length;
+    const answeredQuestions = state.followUpQuestions.filter(q => responses[q] && responses[q].trim() !== '').length;
     
     if (answeredQuestions < 3) {
       setError('Please answer at least 3 questions before proceeding');
@@ -79,7 +93,17 @@ function FollowupPage() {
           <p className="text-blue-800 mb-2">{state.selectedTopic.idea}</p>
           <p className="text-blue-800 text-sm">{state.selectedTopic.description}</p>
         </div>
-        <p className="mt-4 text-sm text-gray-600">Please answer at least 3 of the following questions to help us generate a more personalized essay. The more questions you answer, the better!</p>
+        <div className="mt-4 flex justify-between items-center">
+          <p className="text-sm text-gray-600">Please answer at least 3 of the following questions to help us generate a more personalized essay. The more questions you answer, the better!</p>
+          <button
+            type="button"
+            onClick={generateQuestions}
+            disabled={isLoading}
+            className="ml-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+          >
+            {isLoading ? 'Generating...' : 'Regenerate Questions'}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -94,7 +118,7 @@ function FollowupPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
-          {questions.map((question, index) => (
+          {state.followUpQuestions.map((question, index) => (
             <div key={index} className="card">
               <label className="block mb-2 font-medium text-gray-900">
                 {question}

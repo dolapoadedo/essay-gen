@@ -100,14 +100,24 @@ Content:
 ${formData.personalInsights.writingSample.text}`
       : '';
 
-    const prompt = `Write a compelling, authentic personal essay based on the information provided below. Start with a clear title that reflects the essay's theme, formatted on its own line without asterisks or special characters. Then, follow the 6-step narrative structure:
+    const prompt = `Write a compelling, authentic personal essay that avoids common AI patterns. Important guidelines:
 
-1. Open in the middle (hook with sensory details)
-2. Provide backstory
-3. Reflect on thoughts/feelings
-4. Develop the story
-5. Reflect again on broader meaning
-6. Bring to conclusion${writingSamplePrompt}
+1. Use natural, conversational language. Avoid sophisticated vocabulary (no words like "delve," "tapestry," etc.).
+2. Keep metaphors specific to your actual experiences - avoid generic metaphors about weaving, cooking, painting, dance, or classical music.
+3. Use simple punctuation. Prefer regular dashes and apostrophes. Don't overuse em dashes.
+4. Avoid listing things in threes (tricolons) like "I learned about teamwork, perseverance, and growth."
+5. Don't use cliché realizations like "I learned that the true meaning of X is not only Y, it's also Z"
+6. Avoid formulaic future-looking conclusions like "As I progress in my academic journey..."
+7. End decisively - don't add multiple concluding paragraphs.
+8. Focus on specific, concrete details and genuine emotions rather than abstract lessons.
+
+Start with a clear title that reflects the essay's theme, then tell your story following this structure:
+1. Open with a specific moment or scene (use sensory details)
+2. Provide necessary context
+3. Share your thoughts and feelings
+4. Develop the story with specific details
+5. Reflect on what this means to you
+6. End with a strong, single conclusion${writingSamplePrompt}
 
 Student Information:
 - Class Rank: ${formData.academics.classRank}
@@ -137,21 +147,32 @@ ${Object.entries(followUpResponses)
   .map(([question, answer]) => `${question}:\n${answer}`)
   .join('\n\n')}
 
-Write a 650-word essay that sounds authentic to a student in the ${formData.academics.classRank} of their class.${formData.personalInsights.writingSample?.text ? " Use the provided writing sample to match the student's writing style, vocabulary level, and voice." : ''} The essay should show reflection and personal growth while avoiding clichés and overly formal language. Format with proper paragraphs. The title should be clear and engaging, placed on its own line at the start of the essay without any special characters or formatting.`;
+Write a 650-word essay that sounds genuinely like a ${formData.academics.classRank} student.${formData.personalInsights.writingSample?.text ? " Match the natural style and voice from the provided writing sample." : ''} Focus on telling a specific, personal story with authentic details and emotions. Avoid generic life lessons or philosophical conclusions. The essay should feel like a real conversation, not a formal presentation.`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini-2024-07-18",
       messages: [
         {
           role: "system",
-          content: "You are a college essay writer that helps students write authentic, personal essays that showcase their unique voice and experiences. When a writing sample is provided, carefully analyze and match the student's writing style. Format the essay with a clear title on its own line, followed by well-structured paragraphs. Avoid using special characters or formatting in the title."
+          content: `You are a writing coach helping students write authentic college essays. Your goal is to help them tell their unique stories in their own voice, avoiding common AI patterns:
+- Use natural, conversational language
+- Focus on specific details and real experiences
+- Avoid sophisticated vocabulary and formal phrasing
+- Keep metaphors grounded in the student's actual experiences
+- Use simple punctuation
+- Avoid listing things in threes
+- Skip cliché realizations about "true meaning"
+- End with one strong conclusion
+- Tell a real story, don't just present lessons learned
+
+When a writing sample is provided, carefully analyze and match the student's natural writing style.`
         },
         {
           role: "user",
           content: prompt
         }
       ],
-      temperature: 0.7,
+      temperature: 0.8, // Slightly increased for more variation
     });
 
     return response.choices[0].message.content || '';
