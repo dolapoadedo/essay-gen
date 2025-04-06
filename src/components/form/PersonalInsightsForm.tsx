@@ -40,10 +40,23 @@ export function PersonalInsightsForm({ onNext, onBack, isStandalone = false }: P
   const insights = state.personalInsights;
 
   const updateInsight = (id: string, value: string) => {
-    dispatch({
-      type: 'UPDATE_PERSONAL_INSIGHTS',
-      payload: { [id]: value },
-    });
+    if (id === 'writingSampleText' || id === 'writingSampleTitle') {
+      const currentSample = insights.writingSample || { text: '', title: '' };
+      dispatch({
+        type: 'UPDATE_PERSONAL_INSIGHTS',
+        payload: {
+          writingSample: {
+            ...currentSample,
+            [id === 'writingSampleText' ? 'text' : 'title']: value
+          }
+        },
+      });
+    } else {
+      dispatch({
+        type: 'UPDATE_PERSONAL_INSIGHTS',
+        payload: { [id]: value },
+      });
+    }
   };
 
   return (
@@ -73,6 +86,46 @@ export function PersonalInsightsForm({ onNext, onBack, isStandalone = false }: P
             </div>
           </div>
         ))}
+
+        {/* Writing Sample Section */}
+        <div className="bg-white rounded-lg shadow-sm border-2 border-blue-100">
+          <div className="p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Optional Writing Sample</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Share a piece of writing that represents your style. This could be a short essay, story, or reflection 
+              you've written for school or personally. We'll use this to help maintain your authentic voice in your college essay.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Title of Your Writing
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="Example: My English Class Essay on The Great Gatsby"
+                  value={insights.writingSample?.title || ''}
+                  onChange={(e) => updateInsight('writingSampleTitle', e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Your Writing Sample
+                </label>
+                <textarea
+                  className="w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 min-h-[200px]"
+                  placeholder="Paste your writing sample here..."
+                  value={insights.writingSample?.text || ''}
+                  onChange={(e) => updateInsight('writingSampleText', e.target.value)}
+                  maxLength={2000}
+                />
+                <p className="text-sm text-gray-500 mt-2 text-right">
+                  {(insights.writingSample?.text || '').length}/2000 characters
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {isStandalone && (

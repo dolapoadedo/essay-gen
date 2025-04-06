@@ -137,11 +137,22 @@ function ResultPage() {
           </div>
 
           <div className="prose max-w-none">
-            {state.generatedEssay.split('\n\n').map((paragraph, index) => (
-              <p key={index} className="mb-4">
-                {paragraph}
-              </p>
-            ))}
+            {state.generatedEssay.split('\n\n').map((paragraph, index) => {
+              // If it's the first paragraph and doesn't start with a common sentence starter,
+              // treat it as the title
+              if (index === 0 && !/^(The|A|An|In|On|At|When|While|After|Before|He|She|They|We|I|My|Our|Your|It|This|That)/i.test(paragraph)) {
+                return (
+                  <h2 key={index} className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                    {paragraph}
+                  </h2>
+                );
+              }
+              return (
+                <p key={index} className="mb-4">
+                  {paragraph}
+                </p>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -47,6 +47,10 @@ export interface FormState {
     lesson: string;
     hobby: string;
     unique: string;
+    writingSample: {
+      text: string;
+      title: string;
+    };
   };
   topicSuggestions: Record<string, Array<{
     title: string;
@@ -104,6 +108,10 @@ const initialState: FormState = {
     lesson: '',
     hobby: '',
     unique: '',
+    writingSample: {
+      text: '',
+      title: ''
+    }
   },
   topicSuggestions: {},
   generatedEssay: '',
