@@ -76,11 +76,11 @@ export function PersonalInsightsForm({ onNext, onBack, isStandalone = false }: P
                 <textarea
                   className="w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 min-h-[120px]"
                   placeholder={q.placeholder}
-                  value={insights[q.id as keyof typeof insights] || ''}
+                  value={typeof insights[q.id as keyof typeof insights] === 'string' ? insights[q.id as keyof typeof insights] as string : ''}
                   onChange={(e) => updateInsight(q.id, e.target.value)}
                 />
                 <p className="text-sm text-gray-500 mt-2 text-right">
-                  {(insights[q.id as keyof typeof insights] || '').length}/500 characters
+                  {typeof insights[q.id as keyof typeof insights] === 'string' ? (insights[q.id as keyof typeof insights] as string).length : 0}/500 characters
                 </p>
               </div>
             </div>
