@@ -141,9 +141,11 @@ function ResultPage() {
               // If it's the first paragraph and doesn't start with a common sentence starter,
               // treat it as the title
               if (index === 0 && !/^(The|A|An|In|On|At|When|While|After|Before|He|She|They|We|I|My|Our|Your|It|This|That)/i.test(paragraph)) {
+                // Remove asterisks from the title
+                const cleanTitle = paragraph.replace(/\*/g, '');
                 return (
                   <h2 key={index} className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                    {paragraph}
+                    {cleanTitle}
                   </h2>
                 );
               }
