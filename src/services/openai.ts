@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { FormState } from '../context/FormContext';
+import { FormState } from '../types/form';
 
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
@@ -154,5 +154,49 @@ Write a 650-word essay that sounds authentic to a student in the ${formData.acad
   } catch (error) {
     console.error('Error generating essay:', error);
     throw error;
+  }
+};
+
+export const generateFollowUpQuestions = async (
+  formState: FormState,
+  prompt: string,
+  idea: string
+): Promise<string[]> => {
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful college essay advisor. Generate 5-7 specific follow-up questions to help the student develop their college essay. The questions should encourage reflection and connect the topic to broader experiences."
+        },
+        {
+          role: "user",
+          content: `Student Background:
+- Name: ${formState.basicInfo.fullName}
+- Email: ${formState.basicInfo.email}
+- Selected Topic: ${prompt}
+- Specific Idea: ${idea}
+- Activities: ${formState.activitiesAndInvolvement.activities.map(a => `${a.category}: ${a.description}`).join(', ')}
+- Personal Insights: ${Object.entries(formState.personalInsights).map(([key, value]) => `${key}: ${value}`).join(', ')}
+
+Please generate 5-7 specific questions that will help the student develop their college essay.`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 500
+    });
+
+    const questions = JSON.parse(completion.choices[0].message.content || '[]');
+    return questions;
+  } catch (error) {
+    console.error('Error generating follow-up questions:', error);
+    return [
+      "What specific moment or experience inspired this topic?",
+      "How has this experience changed you?",
+      "What challenges did you face?",
+      "What did you learn from this experience?",
+      "How will this experience help you in college?"
+    ];
   }
 }; 

@@ -1,66 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from '../context/FormContext';
-
-const generateFollowUpQuestions = (prompt: string) => {
-  const commonQuestions = [
-    "What specific moment or experience inspired this topic?",
-    "How has this experience changed your perspective?",
-    "What concrete details or examples can you share about this story?",
-  ];
-
-  const specificQuestions: Record<string, string[]> = {
-    "background": [
-      "How has your background influenced your worldview?",
-      "What specific traditions or experiences make your story unique?",
-    ],
-    "challenge": [
-      "What specific obstacles did you face?",
-      "What strategies did you use to overcome this challenge?",
-    ],
-    "belief": [
-      "What triggered you to question this belief?",
-      "How did others react to your perspective?",
-    ],
-    "gratitude": [
-      "Why was this act of kindness surprising?",
-      "How has this experience influenced your actions towards others?",
-    ],
-    "growth": [
-      "What specific changes did you notice in yourself?",
-      "How has this growth influenced your future goals?",
-    ],
-    "passion": [
-      "When did you first discover this interest?",
-      "How do you pursue this passion outside of school?",
-    ],
-  };
-
-  // Determine which specific questions to add based on prompt keywords
-  const promptLower = prompt.toLowerCase();
-  let relevantQuestions = [...commonQuestions];
-
-  Object.entries(specificQuestions).forEach(([key, questions]) => {
-    if (promptLower.includes(key)) {
-      relevantQuestions = [...relevantQuestions, ...questions];
-    }
-  });
-
-  return relevantQuestions;
-};
+import { generateFollowUpQuestions } from '../services/openai';
 
 function FollowupPage() {
   const navigate = useNavigate();
   const { state, dispatch } = useForm();
   const [responses, setResponses] = useState<Record<string, string>>(() => state.followUpResponses || {});
+  const [questions, setQuestions] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadQuestions = async () => {
+      if (!state.selectedTopic) {
+        navigate('/topics');
+        return;
+      }
+
+      try {
+        const generatedQuestions = await generateFollowUpQuestions(
+          state,
+          state.selectedTopic.prompt,
+          state.selectedTopic.idea
+        );
+        setQuestions(generatedQuestions);
+      } catch (err) {
+        setError('Failed to load questions. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadQuestions();
+  }, [state.selectedTopic]);
 
   if (!state.selectedTopic) {
     navigate('/topics');
     return null;
   }
-
-  const questions = generateFollowUpQuestions(state.selectedTopic.prompt);
 
   const handleResponseChange = (question: string, value: string) => {
     const updatedResponses = {
@@ -78,11 +56,11 @@ function FollowupPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate that all questions have been answered
-    const unansweredQuestions = questions.filter(q => !responses[q] || responses[q].trim() === '');
+    // Count how many questions have been answered
+    const answeredQuestions = questions.filter(q => responses[q] && responses[q].trim() !== '').length;
     
-    if (unansweredQuestions.length > 0) {
-      setError('Please answer all questions before proceeding');
+    if (answeredQuestions < 3) {
+      setError('Please answer at least 3 questions before proceeding');
       return;
     }
 
@@ -101,6 +79,7 @@ function FollowupPage() {
           <p className="text-blue-800 mb-2">{state.selectedTopic.idea}</p>
           <p className="text-blue-800 text-sm">{state.selectedTopic.description}</p>
         </div>
+        <p className="mt-4 text-sm text-gray-600">Please answer at least 3 of the following questions to help us generate a more personalized essay. The more questions you answer, the better!</p>
       </div>
 
       {error && (
@@ -109,38 +88,44 @@ function FollowupPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {questions.map((question, index) => (
-          <div key={index} className="card">
-            <label className="block mb-2 font-medium text-gray-900">
-              {question}
-            </label>
-            <textarea
-              value={responses[question] || ''}
-              onChange={(e) => handleResponseChange(question, e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              rows={4}
-              placeholder="Type your response here..."
-            />
-          </div>
-        ))}
-
-        <div className="flex justify-between mt-8">
-          <button
-            type="button"
-            onClick={() => navigate('/topics')}
-            className="btn btn-secondary"
-          >
-            Back to Topics
-          </button>
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Generate Essay
-          </button>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </form>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {questions.map((question, index) => (
+            <div key={index} className="card">
+              <label className="block mb-2 font-medium text-gray-900">
+                {question}
+              </label>
+              <textarea
+                value={responses[question] || ''}
+                onChange={(e) => handleResponseChange(question, e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows={4}
+                placeholder="Type your response here..."
+              />
+            </div>
+          ))}
+
+          <div className="flex justify-between mt-8">
+            <button
+              type="button"
+              onClick={() => navigate('/topics')}
+              className="btn btn-secondary"
+            >
+              Back to Topics
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+            >
+              Generate Essay
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
