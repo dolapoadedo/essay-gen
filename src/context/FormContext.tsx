@@ -58,6 +58,11 @@ export interface FormState {
     description: string;
   }>>;
   generatedEssay: string;
+  supplementalEssays: Array<{
+    prompt: string;
+    wordCount: number;
+    generatedEssay: string;
+  }>;
 }
 
 type FormAction =
@@ -73,6 +78,8 @@ type FormAction =
   | { type: 'UPDATE_PERSONAL_INSIGHTS'; payload: Partial<FormState['personalInsights']> }
   | { type: 'UPDATE_TOPIC_SUGGESTIONS'; payload: FormState['topicSuggestions'] }
   | { type: 'SET_GENERATED_ESSAY'; payload: string }
+  | { type: 'ADD_SUPPLEMENTAL_ESSAY'; payload: { prompt: string; wordCount: number; generatedEssay: string; } }
+  | { type: 'UPDATE_SUPPLEMENTAL_ESSAY'; payload: { index: number; essay: string; } }
   | { type: 'RESET_FORM' };
 
 const initialState: FormState = {
@@ -118,6 +125,7 @@ const initialState: FormState = {
   },
   topicSuggestions: {},
   generatedEssay: '',
+  supplementalEssays: [],
 };
 
 const FormContext = createContext<{
@@ -189,6 +197,20 @@ const formReducer = (state: FormState, action: FormAction): FormState => {
       return {
         ...state,
         generatedEssay: action.payload,
+      };
+    case 'ADD_SUPPLEMENTAL_ESSAY':
+      return {
+        ...state,
+        supplementalEssays: [...state.supplementalEssays, action.payload],
+      };
+    case 'UPDATE_SUPPLEMENTAL_ESSAY':
+      return {
+        ...state,
+        supplementalEssays: state.supplementalEssays.map((essay, index) =>
+          index === action.payload.index
+            ? { ...essay, generatedEssay: action.payload.essay }
+            : essay
+        ),
       };
     case 'RESET_FORM':
       return {

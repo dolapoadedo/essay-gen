@@ -4,6 +4,7 @@ import FormPage from './pages/FormPage';
 import TopicsPage from './pages/TopicsPage';
 import FollowupPage from './pages/FollowupPage';
 import ResultPage from './pages/ResultPage';
+import SupplementalEssayPage from './pages/SupplementalEssayPage';
 import Header from './components/layout/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -36,6 +37,14 @@ function App() {
             element={
               <ProtectedRoute requiredStep="followup">
                 <ResultPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/supplemental" 
+            element={
+              <ProtectedRoute requiredStep="followup">
+                <SupplementalEssayPage />
               </ProtectedRoute>
             } 
           />

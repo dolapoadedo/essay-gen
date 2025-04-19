@@ -1,6 +1,14 @@
 import OpenAI from 'openai';
 import { FormState } from '../context/FormContext';
 
+declare global {
+  interface ImportMeta {
+    env: {
+      VITE_OPENAI_API_KEY: string;
+    };
+  }
+}
+
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true
@@ -278,5 +286,70 @@ Format the response as a JSON object with a "questions" array field containing e
       "How has this experience influenced your values or beliefs?",
       "What specific challenges did you face and how did you overcome them?"
     ];
+  }
+};
+
+export const generateSupplementalEssay = async (
+  formData: FormState,
+  essayPrompt: string,
+  wordCount: number
+): Promise<string> => {
+  try {
+    const writingSamplePrompt = formData.personalInsights.writingSample?.text 
+      ? `\nWriting Sample (use this to match the student's style and voice):
+Title: ${formData.personalInsights.writingSample.title || 'Sample Writing'}
+Content:
+${formData.personalInsights.writingSample.text}`
+      : '';
+
+    const promptText = `Write a compelling supplemental college essay responding to the following prompt. Important guidelines:
+
+1. Use natural, conversational language
+2. Focus on specific details and real experiences
+3. Stay within the ${wordCount} word limit
+4. Match the student's voice and style${formData.personalInsights.writingSample?.text ? " based on their writing sample" : ""}
+
+Prompt: "${essayPrompt}"
+
+Student Information:
+- Class Rank: ${formData.academics.classRank}
+- Academic Interests: ${formData.academics.subjects.join(', ')}
+- Potential Majors: ${formData.academics.majors.join(', ')}
+- College Preferences: ${formData.collegeGoals.collegeTypes.join(', ')}
+- Activities & Involvement:
+${formData.activitiesAndInvolvement.activities.map(activity => 
+  `  - ${activity.category}${activity.otherCategory ? ` (${activity.otherCategory})` : ''}:
+    Years: ${activity.years.join(', ')}
+    Leadership: ${activity.leadership || 'None'}
+    Hours per Week: ${activity.hoursPerWeek}
+    Description: ${activity.description}`
+).join('\n')}
+- Personal Insights:
+  What makes you happy: ${formData.personalInsights.happy}
+  Role model: ${formData.personalInsights.roleModel}
+  Learning from mistakes: ${formData.personalInsights.lesson}
+  Hobbies: ${formData.personalInsights.hobby}
+  Unique perspective: ${formData.personalInsights.unique}
+${writingSamplePrompt}`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini-2024-07-18",
+      messages: [
+        {
+          role: "system",
+          content: "You are a writing coach helping students write authentic supplemental college essays."
+        },
+        {
+          role: "user",
+          content: promptText
+        }
+      ],
+      temperature: 0.7,
+    });
+
+    return response.choices[0].message.content || '';
+  } catch (error) {
+    console.error('Error generating supplemental essay:', error);
+    throw error;
   }
 }; 

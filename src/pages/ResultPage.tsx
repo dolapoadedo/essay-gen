@@ -167,6 +167,13 @@ function ResultPage() {
         >
           Back to Follow-up
         </button>
+        <button
+          type="button"
+          onClick={() => navigate('/supplemental')}
+          className="btn btn-primary"
+        >
+          Write Supplemental Essays
+        </button>
       </div>
     </div>
   );
