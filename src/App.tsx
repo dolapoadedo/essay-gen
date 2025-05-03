@@ -5,6 +5,7 @@ import TopicsPage from './pages/TopicsPage';
 import FollowupPage from './pages/FollowupPage';
 import ResultPage from './pages/ResultPage';
 import SupplementalEssayPage from './pages/SupplementalEssayPage';
+import EssayTypePage from './pages/EssayTypePage';
 import Header from './components/layout/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -17,9 +18,17 @@ function App() {
           <Route path="/" element={<Navigate to="/form" replace />} />
           <Route path="/form" element={<FormPage />} />
           <Route 
-            path="/topics" 
+            path="/essay-type" 
             element={
               <ProtectedRoute requiredStep="form">
+                <EssayTypePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/topics" 
+            element={
+              <ProtectedRoute requiredStep="essay-type">
                 <TopicsPage />
               </ProtectedRoute>
             } 
@@ -43,7 +52,7 @@ function App() {
           <Route 
             path="/supplemental" 
             element={
-              <ProtectedRoute requiredStep="followup">
+              <ProtectedRoute requiredStep="essay-type">
                 <SupplementalEssayPage />
               </ProtectedRoute>
             } 

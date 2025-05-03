@@ -165,10 +165,10 @@ function TopicsPage() {
       <div className="flex justify-between mt-8">
         <button
           type="button"
-          onClick={() => navigate('/form')}
+          onClick={() => navigate('/essay-type')}
           className="btn btn-secondary"
         >
-          Back to Questions
+          Back to Essay Type
         </button>
         <button
           type="button"

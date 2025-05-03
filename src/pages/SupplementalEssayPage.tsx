@@ -125,7 +125,7 @@ function SupplementalEssayPage() {
       <div className="flex justify-between mt-8">
         <button
           type="button"
-          onClick={() => navigate('/result')}
+          onClick={() => navigate('/essay-type')}
           className="btn btn-secondary"
         >
           Back to Common App Essay

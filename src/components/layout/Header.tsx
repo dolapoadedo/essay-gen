@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 const steps = [
   { name: 'Information', path: '/form' },
+  { name: 'Essay Type', path: '/essay-type' },
   { name: 'Topics', path: '/topics' },
   { name: 'Follow-up', path: '/followup' },
   { name: 'Result', path: '/result' },

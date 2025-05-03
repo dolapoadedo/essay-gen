@@ -58,7 +58,7 @@ function FormPage() {
     if (currentStepIndex < steps.length - 1) {
       setCurrentStepIndex(currentStepIndex + 1);
     } else {
-      navigate('/topics');
+      navigate('/essay-type');
     }
   };
 
@@ -93,7 +93,7 @@ function FormPage() {
             disabled={!canProceed}
             className={`btn ${!canProceed ? 'opacity-50 cursor-not-allowed' : ''} btn-primary`}
           >
-            {isLastStep ? 'View Topics' : 'Next'}
+            {isLastStep ? 'Continue' : 'Next'}
           </button>
         </div>
       </div>

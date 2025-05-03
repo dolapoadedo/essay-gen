@@ -4,7 +4,7 @@ import { useForm } from '../context/FormContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredStep: 'form' | 'topics' | 'followup' | 'result';
+  requiredStep: 'form' | 'essay-type' | 'topics' | 'followup' | 'result';
 }
 
 export function ProtectedRoute({ children, requiredStep }: ProtectedRouteProps) {
@@ -13,6 +13,8 @@ export function ProtectedRoute({ children, requiredStep }: ProtectedRouteProps) 
   const isStepComplete = () => {
     switch (requiredStep) {
       case 'form':
+        return state.basicInfo.fullName && state.academics.classRank && state.collegeGoals.collegeTypes.length > 0;
+      case 'essay-type':
         return state.basicInfo.fullName && state.academics.classRank && state.collegeGoals.collegeTypes.length > 0;
       case 'topics':
         return state.selectedTopic !== null;
